@@ -1,0 +1,40 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Действующие лица
+actor "Администратор" as Admin
+actor "Клиент" as Client
+actor "Мастер" as Master
+
+' Варианты использования (Use Cases)
+usecase "вход в систему" as UC_Login
+usecase "регистрация клиента" as UC_Reg
+usecase "создание\nи подтверждение\nзаписи" as UC_Create
+usecase "удаление записи" as UC_Delete
+usecase "просмотр записей" as UC_View
+usecase "запись на услугу" as UC_Book
+usecase "отмена записи" as UC_Cancel
+usecase "просмотр\nрасписания" as UC_Schedule
+
+' Связи Администратора
+Admin --> UC_Login
+Admin --> UC_Reg
+Admin --> UC_Create
+Admin --> UC_Delete
+Admin --> UC_View
+
+' Связи Клиента
+Client --> UC_Book
+Client --> UC_Cancel
+Client --> UC_View
+
+' Связи Мастера
+Master --> UC_View
+
+' Связи Include (включение)
+UC_Create ..> UC_Schedule : include
+UC_Book ..> UC_Schedule : include
+
+@enduml
+
