@@ -1,0 +1,116 @@
+// ============================================
+// ER-диаграмма: Салон красоты
+// dbdiagram.io — вставьте этот код слева
+// ============================================
+
+// ---------- Пользователи ----------
+Table users {
+  user_id       integer      [pk, increment, note: 'Уникальный ID пользователя']
+  login         varchar(50)  [not null, unique, note: 'Логин для входа']
+  password_hash varchar(255) [not null, note: 'Хэш пароля']
+  role          varchar(20)  [not null, note: 'client | master | admin']
+  created_at    timestamp    [not null]
+
+  Note: 'Учётные записи системы с разграничением прав'
+}
+
+// ---------- Клиенты ----------
+Table clients {
+  client_id  integer      [pk, increment]
+  user_id    integer      [unique, note: 'Связь с учётной записью (может быть NULL)']
+  full_name  varchar(150) [not null]
+  phone      varchar(20)  [not null, unique]
+  email      varchar(100)
+  birth_date date
+  notes      text
+
+  Note: 'База клиентов салона'
+}
+
+// ---------- Мастера ----------
+Table masters {
+  master_id      integer      [pk, increment]
+  user_id        integer      [unique]
+  full_name      varchar(150) [not null]
+  specialization varchar(100) [not null, note: 'Парикмахер / Маникюр / Косметолог']
+  phone          varchar(20)
+  hire_date      date
+  is_active      boolean      [not null, default: true]
+
+  Note: 'Сотрудники салона — мастера'
+}
+
+// ---------- Услуги ----------
+Table services {
+  service_id   integer      [pk, increment]
+  name         varchar(150) [not null]
+  category     varchar(50)  [not null, note: 'Категория услуги']
+  price        numeric      [not null, note: 'Цена в рублях']
+  duration_min integer      [not null, note: 'Длительность в минутах']
+  description  text
+
+  Note: 'Прайс-лист услуг'
+}
+
+// ---------- M:N: Мастер ↔ Услуга ----------
+Table master_services {
+  master_id  integer [not null]
+  service_id integer [not null]
+
+  indexes {
+    (master_id, service_id) [pk]
+  }
+
+  Note: 'Какие услуги оказывает каждый мастер (M:N)'
+}
+
+// ---------- Расписание мастеров ----------
+Table schedules {
+  schedule_id integer   [pk, increment]
+  master_id   integer   [not null]
+  work_date   date      [not null]
+  start_time  timestamp [not null]
+  end_time    timestamp [not null]
+
+  Note: 'График работы мастеров по дням'
+}
+
+// ---------- Записи на услуги ----------
+Table appointments {
+  appointment_id integer     [pk, increment]
+  client_id      integer     [not null]
+  master_id      integer     [not null]
+  service_id     integer     [not null]
+  start_time     timestamp   [not null]
+  end_time       timestamp   [not null]
+  status         varchar(20) [not null, default: 'pending', note: 'pending | confirmed | completed | cancelled']
+  created_at     timestamp   [not null]
+
+  Note: 'Центральная таблица — записи клиентов к мастерам'
+}
+
+// ============================================
+// СВЯЗИ (Relationships)
+// ============================================
+
+// 1:1 — пользователь ↔ клиент (может быть не привязан)
+Ref: users.user_id < clients.user_id
+
+// 1:1 — пользователь ↔ мастер (может быть не привязан)
+Ref: users.user_id < masters.user_id
+
+// M:N — мастер ↔ услуга через промежуточную таблицу
+Ref: masters.master_id  < master_services.master_id
+Ref: services.service_id < master_services.service_id
+
+// 1:N — мастер ↔ расписание
+Ref: masters.master_id < schedules.master_id
+
+// 1:N — клиент ↔ записи
+Ref: clients.client_id < appointments.client_id
+
+// 1:N — мастер ↔ записи
+Ref: masters.master_id < appointments.master_id
+
+// 1:N — услуга ↔ записи
+Ref: services.service_id < appointments.service_id

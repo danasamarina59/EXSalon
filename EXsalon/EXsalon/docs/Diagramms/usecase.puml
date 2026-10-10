@@ -1,0 +1,37 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Администратор" as Admin
+actor "Мастер" as Master
+actor "Клиент" as Client
+
+usecase "регистрация клиента" as UC_Reg
+usecase "создание\nи подтверждение\nзаписи" as UC_Create
+usecase "удаление записи" as UC_Delete
+usecase "вход в систему" as UC_Login
+usecase "просмотр записей" as UC_View
+usecase "запись на услугу" as UC_Book
+usecase "отмена записи" as UC_Cancel
+usecase "просмотр\nрасписания" as UC_Schedule
+
+' Связи Администратора (линии без стрелок)
+Admin -- UC_Reg
+Admin -- UC_Create
+Admin -- UC_Delete
+Admin -- UC_Login
+Admin -- UC_View
+
+' Связи Мастера (линии без стрелок)
+Master -- UC_View
+
+' Связи Клиента (линии без стрелок)
+Client -- UC_View
+Client -- UC_Book
+Client -- UC_Cancel
+
+' Связи Include (пунктирные стрелки, как в UML)
+UC_Create ..> UC_Schedule : include
+UC_Book ..> UC_Schedule : include
+
+@enduml
